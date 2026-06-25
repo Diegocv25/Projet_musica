@@ -1,14 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
-import TrackPlayer, {
-  AppKilledPlaybackBehavior,
-  Capability,
-  Event,
-  State,
-  useActiveTrack,
-  useIsPlaying,
-  useTrackPlayerEvents,
-} from "react-native-track-player";
+import TrackPlayer, { AppKilledPlaybackBehavior, Capability, State } from "react-native-track-player";
 import type { Track as PlayerTrack } from "react-native-track-player";
 import type { Track } from "./music";
 
@@ -38,35 +30,11 @@ function toPlayerTrack(track: Track): PlayerTrack {
   };
 }
 
-function fromPlayerTrack(track: PlayerTrack | undefined): Track | null {
-  if (!track) return null;
-  return {
-    id: String(track.id),
-    title: track.title ?? "",
-    artist: track.artist ?? "",
-    cover: String(track.artwork ?? track.cover ?? ""),
-    duration: typeof track.duration === "number" ? `${Math.floor(track.duration / 60)}:${String(Math.round(track.duration % 60)).padStart(2, "0")}` : "",
-    audioUrl: String(track.url ?? track.audioUrl ?? ""),
-    playUrl: typeof track.playUrl === "string" ? track.playUrl : undefined,
-    folderId: typeof track.folderId === "string" ? track.folderId : undefined,
-    status: typeof track.status === "string" ? track.status : undefined,
-  };
-}
-
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
+  const [current, setCurrent] = useState<Track | null>(null);
+  const [playing, setPlaying] = useState(false);
   const setupRef = useRef<Promise<void> | null>(null);
-  const activeTrack = useActiveTrack();
-  const { playing: isPlaying } = useIsPlaying();
-
-  useEffect(() => {
-    void ensurePlayerReady();
-    void ensureNotificationPermission();
-  }, []);
-
-  useTrackPlayerEvents([Event.PlaybackError], (event) => {
-    console.warn("TrackPlayer playback error", event);
-  });
 
   async function ensurePlayerReady() {
     if (!setupRef.current) {
@@ -74,26 +42,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         try {
           await TrackPlayer.setupPlayer();
         } catch (error) {
-          const message = String(error ?? "");
-          if (!message.includes("already initialized")) {
-            throw error;
-          }
+          console.warn("TrackPlayer setup failed", error);
         }
 
-        await TrackPlayer.updateOptions({
-          android: {
-            appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
-          },
-          capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.Stop,
-            Capability.SeekTo,
-            Capability.SkipToNext,
-            Capability.SkipToPrevious,
-          ],
-          compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
-        });
+        try {
+          await TrackPlayer.updateOptions({
+            android: {
+              appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
+            },
+            capabilities: [
+              Capability.Play,
+              Capability.Pause,
+              Capability.Stop,
+              Capability.SeekTo,
+              Capability.SkipToNext,
+              Capability.SkipToPrevious,
+            ],
+            compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
+          });
+        } catch (error) {
+          console.warn("TrackPlayer updateOptions failed", error);
+        }
       })();
     }
 
@@ -121,11 +90,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       await ensurePlayerReady();
+      await ensureNotificationPermission();
       await TrackPlayer.reset();
       await TrackPlayer.add(toPlayerTrack(track));
       await TrackPlayer.play();
+      setCurrent(track);
+      setPlaying(true);
     } catch (error) {
       console.warn("TrackPlayer play failed", error);
+      setPlaying(false);
     } finally {
       setLoading(false);
     }
@@ -134,12 +107,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   async function togglePlayback() {
     try {
       await ensurePlayerReady();
+      if (!current) {
+        return;
+      }
       const state = (await TrackPlayer.getPlaybackState()).state;
       if (state === State.Playing || state === State.Buffering) {
         await TrackPlayer.pause();
+        setPlaying(false);
         return;
       }
       await TrackPlayer.play();
+      setPlaying(true);
     } catch (error) {
       console.warn("TrackPlayer toggle failed", error);
     }
@@ -147,8 +125,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({
-      current: fromPlayerTrack(activeTrack),
-      playing: Boolean(isPlaying),
+      current,
+      playing,
       loading,
       play: (track: Track) => {
         void loadAndPlay(track);
@@ -157,7 +135,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         void togglePlayback();
       },
     }),
-    [activeTrack, isPlaying, loading],
+    [current, playing, loading],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

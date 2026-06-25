@@ -63,6 +63,8 @@ export async function searchYouTube(query: string, limit = 12): Promise<YouTubeR
 export async function downloadAsMp3(sourceUrl: string, outputTemplate: string) {
   const args = [
     sourceUrl,
+    "-f",
+    "bestaudio/best",
     "-x",
     "--audio-format",
     "mp3",

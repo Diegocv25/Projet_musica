@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { PermissionsAndroid, Platform } from "react-native";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
@@ -60,6 +61,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     void ensurePlayerReady();
+    void ensureNotificationPermission();
   }, []);
 
   useTrackPlayerEvents([Event.PlaybackError], (event) => {
@@ -96,6 +98,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
 
     await setupRef.current;
+  }
+
+  async function ensureNotificationPermission() {
+    if (Platform.OS !== "android") return;
+    const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
+    if (!permission) return;
+    try {
+      const granted = await PermissionsAndroid.request(permission);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        console.warn("Notification permission not granted for TrackPlayer");
+      }
+    } catch (error) {
+      console.warn("Notification permission request failed", error);
+    }
   }
 
   async function loadAndPlay(track: Track) {

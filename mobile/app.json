@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.nexusautomacao.projetomusica",
+      "permissions": ["POST_NOTIFICATIONS"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -36,8 +37,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "react-native-track-player"
+      "expo-font"
     ]
   }
 }

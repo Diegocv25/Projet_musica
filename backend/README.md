@@ -23,6 +23,10 @@ npm run start
 - `YTDLP_COOKIES_FILE` — caminho para cookies do YouTube, se necessário
 - `YTDLP_EXTRACTOR_ARGS` — args extras do yt-dlp, se necessário
 
+## Observação sobre credenciais
+Se existir `~/credentials.env`, o backend carrega esse arquivo automaticamente antes de subir.
+Isso permite guardar `YTDLP_COOKIES_FILE` e `YTDLP_EXTRACTOR_ARGS` fora do repositório.
+
 ## Rotas principais
 - `GET /health`
 - `GET /search?q=...`

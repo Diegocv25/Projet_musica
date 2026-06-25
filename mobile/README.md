@@ -26,4 +26,4 @@ Exemplo local:
 - Expo Router
 - AsyncStorage
 - Expo File System
-- Expo AV
+- React Native Track Player

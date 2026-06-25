@@ -1,5 +1,14 @@
-import { Audio } from "expo-av";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import TrackPlayer, {
+  AppKilledPlaybackBehavior,
+  Capability,
+  Event,
+  State,
+  useActiveTrack,
+  useIsPlaying,
+  useTrackPlayerEvents,
+} from "react-native-track-player";
+import type { Track as PlayerTrack } from "react-native-track-player";
 import type { Track } from "./music";
 
 type PlayerContextType = {
@@ -12,26 +21,82 @@ type PlayerContextType = {
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
 
+function toPlayerTrack(track: Track): PlayerTrack {
+  const uri = track.playUrl || track.audioUrl;
+  return {
+    id: track.id,
+    url: uri,
+    title: track.title,
+    artist: track.artist,
+    artwork: track.cover,
+    cover: track.cover,
+    playUrl: track.playUrl,
+    audioUrl: track.audioUrl,
+    folderId: track.folderId,
+    status: track.status,
+  };
+}
+
+function fromPlayerTrack(track: PlayerTrack | undefined): Track | null {
+  if (!track) return null;
+  return {
+    id: String(track.id),
+    title: track.title ?? "",
+    artist: track.artist ?? "",
+    cover: String(track.artwork ?? track.cover ?? ""),
+    duration: typeof track.duration === "number" ? `${Math.floor(track.duration / 60)}:${String(Math.round(track.duration % 60)).padStart(2, "0")}` : "",
+    audioUrl: String(track.url ?? track.audioUrl ?? ""),
+    playUrl: typeof track.playUrl === "string" ? track.playUrl : undefined,
+    folderId: typeof track.folderId === "string" ? track.folderId : undefined,
+    status: typeof track.status === "string" ? track.status : undefined,
+  };
+}
+
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
-  const [current, setCurrent] = useState<Track | null>(null);
-  const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const setupRef = useRef<Promise<void> | null>(null);
+  const activeTrack = useActiveTrack();
+  const { playing: isPlaying } = useIsPlaying();
 
   useEffect(() => {
-    Audio.setAudioModeAsync({
-      staysActiveInBackground: false,
-      playsInSilentModeIOS: true,
-      shouldDuckAndroid: true,
-      playThroughEarpieceAndroid: false,
-    }).catch(() => undefined);
-
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(() => undefined);
-      }
-    };
+    void ensurePlayerReady();
   }, []);
+
+  useTrackPlayerEvents([Event.PlaybackError], (event) => {
+    console.warn("TrackPlayer playback error", event);
+  });
+
+  async function ensurePlayerReady() {
+    if (!setupRef.current) {
+      setupRef.current = (async () => {
+        try {
+          await TrackPlayer.setupPlayer();
+        } catch (error) {
+          const message = String(error ?? "");
+          if (!message.includes("already initialized")) {
+            throw error;
+          }
+        }
+
+        await TrackPlayer.updateOptions({
+          android: {
+            appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
+          },
+          capabilities: [
+            Capability.Play,
+            Capability.Pause,
+            Capability.Stop,
+            Capability.SeekTo,
+            Capability.SkipToNext,
+            Capability.SkipToPrevious,
+          ],
+          compactCapabilities: [Capability.Play, Capability.Pause, Capability.Stop],
+        });
+      })();
+    }
+
+    await setupRef.current;
+  }
 
   async function loadAndPlay(track: Track) {
     const uri = track.playUrl || track.audioUrl;
@@ -39,42 +104,35 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
-
-      const { sound } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: true, volume: 1.0 },
-      );
-      soundRef.current = sound;
-      setCurrent(track);
-      setPlaying(true);
-    } catch {
-      setPlaying(false);
+      await ensurePlayerReady();
+      await TrackPlayer.reset();
+      await TrackPlayer.add(toPlayerTrack(track));
+      await TrackPlayer.play();
+    } catch (error) {
+      console.warn("TrackPlayer play failed", error);
     } finally {
       setLoading(false);
     }
   }
 
   async function togglePlayback() {
-    if (!soundRef.current) return;
-    const status = await soundRef.current.getStatusAsync();
-    if (!status.isLoaded) return;
-    if (status.isPlaying) {
-      await soundRef.current.pauseAsync();
-      setPlaying(false);
-      return;
+    try {
+      await ensurePlayerReady();
+      const state = (await TrackPlayer.getPlaybackState()).state;
+      if (state === State.Playing || state === State.Buffering) {
+        await TrackPlayer.pause();
+        return;
+      }
+      await TrackPlayer.play();
+    } catch (error) {
+      console.warn("TrackPlayer toggle failed", error);
     }
-    await soundRef.current.playAsync();
-    setPlaying(true);
   }
 
   const value = useMemo(
     () => ({
-      current,
-      playing,
+      current: fromPlayerTrack(activeTrack),
+      playing: Boolean(isPlaying),
       loading,
       play: (track: Track) => {
         void loadAndPlay(track);
@@ -83,7 +141,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         void togglePlayback();
       },
     }),
-    [current, playing, loading],
+    [activeTrack, isPlaying, loading],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

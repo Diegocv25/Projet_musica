@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { View } from "react-native";
+import "../src/playback-service";
 import { MiniPlayer } from "../src/mini-player";
 import { PlayerProvider } from "../src/player-context";
 

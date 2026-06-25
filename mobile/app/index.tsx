@@ -10,7 +10,7 @@ export default function Splash() {
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0D0D12" }}>
-      <Text style={{ color: "#fff", fontSize: 34, fontWeight: "500", marginBottom: 12 }}>SomWave</Text>
+      <Text style={{ color: "#fff", fontSize: 34, fontWeight: "500", marginBottom: 12 }}>Projeto Música</Text>
       <ActivityIndicator color="#A78BFA" />
     </View>
   );

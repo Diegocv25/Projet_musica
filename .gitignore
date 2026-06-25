@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+mobile/node_modules/
+
+# Build outputs
+backend/dist/
+mobile/dist/
+
+# Runtime data
+backend/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Expo / caches
+mobile/.expo/
+mobile/.expo-shared/
+
+# Misc
+.DS_Store

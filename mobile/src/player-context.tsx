@@ -34,6 +34,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function loadAndPlay(track: Track) {
+    const uri = track.playUrl || track.audioUrl;
+    if (!uri) return;
+
     setLoading(true);
     try {
       if (soundRef.current) {
@@ -42,7 +45,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
 
       const { sound } = await Audio.Sound.createAsync(
-        { uri: track.audioUrl },
+        { uri },
         { shouldPlay: true, volume: 1.0 },
       );
       soundRef.current = sound;

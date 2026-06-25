@@ -26,7 +26,7 @@ export default function Cadastro() {
   return (
     <View style={s.page}>
       <Text style={s.h1}>Criar cadastro</Text>
-      <Text style={s.sub}>Todos os logins ficam na mesma conta da família.</Text>
+      <Text style={s.sub}>Cada familiar pode criar sua pasta e organizar suas músicas.</Text>
       <TextInput placeholder="Nome" placeholderTextColor="rgba(255,255,255,0.35)" style={s.input} value={nome} onChangeText={setNome} />
       <TextInput placeholder="E-mail" placeholderTextColor="rgba(255,255,255,0.35)" style={s.input} value={email} onChangeText={setEmail} autoCapitalize="none" />
       <View style={s.senhaWrap}>

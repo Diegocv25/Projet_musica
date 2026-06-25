@@ -24,7 +24,7 @@ export default function Login() {
   return (
     <View style={s.page}>
       <Text style={s.h1}>Bem-vindo de volta</Text>
-      <Text style={s.sub}>Entre para continuar ouvindo</Text>
+      <Text style={s.sub}>Entre para continuar ouvindo, baixando e organizando as músicas da família</Text>
       <TextInput placeholder="E-mail" placeholderTextColor="rgba(255,255,255,0.35)" style={s.input} value={email} onChangeText={setEmail} autoCapitalize="none" />
       <View style={s.senhaWrap}>
         <TextInput placeholder="Senha" placeholderTextColor="rgba(255,255,255,0.35)" secureTextEntry={!mostrarSenha} style={[s.input, { flex: 1, marginBottom: 0 }]} value={senha} onChangeText={setSenha} />

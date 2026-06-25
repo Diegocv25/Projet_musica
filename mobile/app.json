@@ -29,6 +29,7 @@
     },
     "extra": {
       "jamendoClientId": "e6ccb108",
+      "apiBaseUrl": "http://127.0.0.1:8787",
       "eas": {
         "projectId": "f30b7795-c3c4-4d22-a40d-01b6af16d2fa"
       }

@@ -5,6 +5,9 @@ export type Track = {
   cover: string;
   duration: string;
   audioUrl: string;
+  playUrl?: string | null;
+  folderId?: string | null;
+  status?: string | null;
 };
 
 export const tracks: Track[] = [

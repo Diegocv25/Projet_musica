@@ -16,6 +16,23 @@ npm run build
 npm run start
 ```
 
+## Serviço persistente na VPS
+Existe um unit do systemd:
+
+```text
+/etc/systemd/system/projeto-musica-backend.service
+```
+
+Ele sobe o backend automaticamente com `YTDLP_CONFIG_FILE=/root/.config/projeto-musica/ytdlp.env`.
+
+Comandos úteis:
+```bash
+sudo systemctl enable --now projeto-musica-backend.service
+sudo systemctl status projeto-musica-backend.service
+sudo systemctl restart projeto-musica-backend.service
+sudo journalctl -u projeto-musica-backend.service -f
+```
+
 ## Variáveis úteis
 - `PORT` — porta da API, padrão `8787`
 - `MUSIC_APP_DATA_DIR` — diretório dos dados

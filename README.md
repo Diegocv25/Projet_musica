@@ -1,61 +1,65 @@
-# Projet_musica
-Projeto Música
+# Projeto Musica
 
-Aplicativo mobile para organização e acompanhamento de músicas, desenvolvido em React Native com Expo e TypeScript.
+Aplicativo mobile para organizacao e acompanhamento de musicas, desenvolvido em **React Native com Expo e TypeScript**.
 
-Stack
+## Stack
 
-• React Native
-• Expo
-• TypeScript
-• Expo Router
-• AsyncStorage
-• Expo Go para testes no celular
+- React Native
+- Expo
+- TypeScript
+- Expo Router
+- AsyncStorage
+- Expo Go para testes no celular
 
-Funcionalidades
+## Funcionalidades
 
-• Cadastro de músicas
-• Campos de título, artista, gênero e status
-• Listagem das músicas cadastradas
-• Filtro por status:
-  • todos
-  • rascunho
-  • gravada
-  • lançada
-• Persistência local no aparelho com AsyncStorage
+- Cadastro de musicas
+- Campos de titulo, artista, genero e status
+- Listagem das musicas cadastradas
+- Filtro por status:
+  - todos
+  - rascunho
+  - gravada
+  - lancada
+- Persistencia local no aparelho com AsyncStorage
 
-Como rodar
+## Como rodar
 
 Entre na pasta do app mobile:
 
-Bash
-
+```bash
 cd mobile
-Instale as dependências:
+```
 
-Bash
+Instale as dependencias:
 
+```bash
 npm install
+```
+
 Inicie o app:
 
-Bash
-
+```bash
 npx expo start --tunnel
-Depois, abra o Expo Go no celular e escaneie o QR Code exibido no terminal.
+```
 
-Scripts úteis
+Depois, abra o **Expo Go** no celular e escaneie o QR Code exibido no terminal.
 
-Bash
+## Scripts uteis
 
+```bash
 npm run start
 npm run android
 npm run ios
 npm run web
-Verificação técnica
+```
 
-Bash
+## Verificacao tecnica
 
+```bash
 npx tsc --noEmit
-Observação
+```
 
-Este repositório representa a versão atual adaptada do projeto em React Native / Expo, não a versão antiga em Dart/Flutter.
+## Observacao
+
+Este repositorio representa a versao atual adaptada do projeto em **React Native / Expo**, nao a versao antiga em Dart/Flutter.

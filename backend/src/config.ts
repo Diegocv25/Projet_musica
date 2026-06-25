@@ -21,7 +21,8 @@ function loadEnvFileIfPresent(filePath: string) {
   }
 }
 
-loadEnvFileIfPresent(path.join(os.homedir(), "credentials.env"));
+const ytdlpConfigFile = process.env.YTDLP_CONFIG_FILE?.trim() || path.join(os.homedir(), ".config", "projeto-musica", "ytdlp.env");
+loadEnvFileIfPresent(ytdlpConfigFile);
 
 const ROOT = process.cwd();
 export const DATA_DIR = path.resolve(process.env.MUSIC_APP_DATA_DIR || path.join(ROOT, "data"));

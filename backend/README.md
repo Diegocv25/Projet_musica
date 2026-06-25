@@ -20,12 +20,21 @@ npm run start
 - `PORT` — porta da API, padrão `8787`
 - `MUSIC_APP_DATA_DIR` — diretório dos dados
 - `CORS_ORIGIN` — origem permitida no CORS
-- `YTDLP_COOKIES_FILE` — caminho para cookies do YouTube, se necessário
-- `YTDLP_EXTRACTOR_ARGS` — args extras do yt-dlp, se necessário
+- `YTDLP_CONFIG_FILE` — caminho para o arquivo externo com opções do yt-dlp
 
-## Observação sobre credenciais
-Se existir `~/credentials.env`, o backend carrega esse arquivo automaticamente antes de subir.
-Isso permite guardar `YTDLP_COOKIES_FILE` e `YTDLP_EXTRACTOR_ARGS` fora do repositório.
+## Config externo do yt-dlp
+Por padrão, o backend lê:
+
+```text
+~/.config/projeto-musica/ytdlp.env
+```
+
+Esse arquivo é separado de `~/credentials.env` e deve carregar apenas configurações do yt-dlp, como:
+
+```bash
+YTDLP_COOKIES_FILE=/caminho/para/cookies.txt
+YTDLP_EXTRACTOR_ARGS=player_client=android
+```
 
 ## Rotas principais
 - `GET /health`

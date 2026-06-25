@@ -14,6 +14,17 @@ function mp3Path(folderId: string, youtubeId: string) {
   return path.join(folderDir(folderId), `${youtubeId}.mp3`);
 }
 
+function normalizeDownloadError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/Sign in to confirm/i.test(message) || /not a bot/i.test(message)) {
+    return "YouTube bloqueou o download sem cookies válidos";
+  }
+  if (/Requested format is not available/i.test(message)) {
+    return "O YouTube não disponibilizou um formato baixável para esse vídeo";
+  }
+  return message || "Falha ao baixar";
+}
+
 export async function processQueue() {
   if (running) return;
   running = true;
@@ -56,7 +67,7 @@ export async function processQueue() {
       } catch (error) {
         db.prepare("UPDATE tracks SET status = ?, error_message = ?, updated_at = ? WHERE id = ?").run(
           "error",
-          error instanceof Error ? error.message : "Falha ao baixar",
+          normalizeDownloadError(error),
           isoNow(),
           next.id,
         );
